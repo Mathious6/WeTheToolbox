@@ -1,0 +1,7 @@
+colorama~=0.4.6
+python-dotenv~=1.0.0
+requests~=2.31.0
+PyPasser~=0.0.5
+fake-useragent~=1.4.0
+noble-tls~=0.0.4
+httpx~=0.26.0
