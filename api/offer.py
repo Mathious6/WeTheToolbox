@@ -1,44 +1,15 @@
-import dataclasses
 from asyncio import sleep
 
 from requests import Response
 
 from api.seller import Seller
+from models.wtn import Offer
 from utils.config import Config
 from utils.log import Log, LogLevel
 from utils.proxy import Proxies
 from utils.webhook import WebHook
 
 logger: Log = Log('Offer', LogLevel.DEBUG)
-
-
-@dataclasses.dataclass
-class Offer:
-    id: str
-    name: str
-    variant_id: int
-    sku: str
-    brand: str
-    image: str
-    size: str
-    listing_price: int
-    price: int
-    createTime: str
-
-    def __post_init__(self):
-        self.listing_price = int(self.listing_price)
-        self.price = int(self.price)
-
-    def __eq__(self, other):
-        if not isinstance(other, Offer):
-            return NotImplemented
-        return self.id == other.id
-
-    def __hash__(self):
-        return hash(self.id)
-
-    def __repr__(self):
-        return f'Offer(id={self.id}, sku={self.sku}, size={self.size}, price={self.price}'
 
 
 class OfferManager:
@@ -55,7 +26,7 @@ class OfferManager:
         self.offers_seen: set[Offer] = set[Offer]()
 
         self.params: dict = {
-            'take': '10'
+            'take': '100'
         }
 
     async def monitor_offers(self) -> None:

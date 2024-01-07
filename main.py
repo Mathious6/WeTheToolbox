@@ -5,6 +5,7 @@ from colorama import init
 from fake_useragent import UserAgent
 from noble_tls import Session, Client
 
+from api.consign import ConsignManager
 from api.offer import OfferManager
 from api.seller import Seller
 from utils.config import Config
@@ -26,8 +27,12 @@ async def main():
 
     seller: Seller = Seller(s, proxies, config, ua)
     offers: OfferManager = OfferManager(proxies, config, seller)
+    consigns: ConsignManager = ConsignManager(proxies, config, seller)
 
-    await offers.monitor_offers()
+    task1 = asyncio.create_task(offers.monitor_offers())
+    task2 = asyncio.create_task(consigns.monitor_consigns())
+
+    await asyncio.gather(task1, task2)
 
 
 if __name__ == '__main__':

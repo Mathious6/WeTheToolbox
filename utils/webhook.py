@@ -4,6 +4,7 @@ from datetime import datetime
 
 from requests import post
 
+from models.wtn import Offer, Consign
 from utils.log import Log, LogLevel
 
 logger: Log = Log('Webhook', LogLevel.DEBUG)
@@ -53,13 +54,13 @@ class WebHook:
         except Exception as e:
             logger.error(f'Error while sending webhook: {e}')
 
-    def _build_webhook_data(self, offer, title: str, color: int, fields: list[dict]) -> dict:
+    def _build_webhook_data(self, image: str, title: str, color: int, fields: list[dict]) -> dict:
         return {
             'embeds': [
                 {
                     'title': title,
                     'url': 'https://sell.wethenew.com/fr/offers',
-                    'thumbnail': {'url': offer.image},
+                    'thumbnail': {'url': image},
                     'color': color,
                     'fields': fields,
                     'footer': {
@@ -78,7 +79,7 @@ class WebHook:
         except Exception as e:
             logger.error(f'Error while sending webhook: {e}')
 
-    def send_offer(self, offer) -> None:
+    def send_offer(self, offer: Offer) -> None:
         fields: list[dict] = [
             {'name': 'Product', 'value': f'{offer.brand} - {offer.name}', 'inline': False},
             {'name': 'Size', 'value': offer.size, 'inline': True},
@@ -86,10 +87,10 @@ class WebHook:
             {'name': 'Offer Price', 'value': f'{offer.price}€', 'inline': True},
             {'name': 'Created', 'value': offer.createTime, 'inline': False},
         ]
-        webhook_data: dict = self._build_webhook_data(offer, f'New offer found [{offer.sku}] 🔎', 0xC8DEDC, fields)
+        webhook_data: dict = self._build_webhook_data(offer.image, f'New offer found [{offer.sku}] 🔎', 0xC8DEDC, fields)
         self._send_webhook(webhook_data)
 
-    def send_accept_offer(self, offer) -> None:
+    def send_accept_offer(self, offer: Offer) -> None:
         fields: list[dict] = [
             {'name': 'Product', 'value': f'{offer.brand} - {offer.name}', 'inline': False},
             {'name': 'Size', 'value': offer.size, 'inline': True},
@@ -97,10 +98,10 @@ class WebHook:
             {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
             {'name': 'Accepted', 'value': datetime.utcnow().isoformat(), 'inline': False},
         ]
-        webhook_data: dict = self._build_webhook_data(offer, f'Offer accepted [{offer.sku}] 🎉', 0xA0E062, fields)
+        webhook_data: dict = self._build_webhook_data(offer.image, f'Offer accepted [{offer.sku}] 🎉', 0xA0E062, fields)
         self._send_webhook(webhook_data)
 
-    def send_refuse_offer(self, offer) -> None:
+    def send_refuse_offer(self, offer: Offer) -> None:
         fields: list[dict] = [
             {'name': 'Product', 'value': f'{offer.brand} - {offer.name}', 'inline': False},
             {'name': 'Size', 'value': offer.size, 'inline': True},
@@ -108,5 +109,25 @@ class WebHook:
             {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
             {'name': 'Refused', 'value': datetime.utcnow().isoformat(), 'inline': False},
         ]
-        webhook_data: dict = self._build_webhook_data(offer, f'Offer refused [{offer.sku}] ❌', 0xFF0000, fields)
+        webhook_data: dict = self._build_webhook_data(offer.image, f'Offer refused [{offer.sku}] ❌', 0xFF0000, fields)
+        self._send_webhook(webhook_data)
+
+    def send_consign(self, consign: Consign, added_sizes: set[str]) -> None:
+        updated_sizes: list[str] = []
+        for size in consign.sizes:
+            if size in added_sizes:
+                updated_sizes.append('**+ ' + size + '**')
+            else:
+                updated_sizes.append('  ' + size)
+
+        fields: list[dict] = [
+            {
+                'name': 'Sizes',
+                'value': '\n'.join(updated_sizes),
+                'inline': False
+            },
+        ]
+        webhook_data: dict = self._build_webhook_data(
+            consign.image, f'{consign.brand} - {consign.name} 🔎', 0x000000, fields
+        )
         self._send_webhook(webhook_data)
