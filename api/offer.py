@@ -16,7 +16,7 @@ logger: Log = Log('Offer', LogLevel.DEBUG)
 class Offer:
     id: str
     name: str
-    variant_id: str
+    variant_id: int
     sku: str
     brand: str
     image: str
@@ -46,6 +46,7 @@ class OfferManager:
 
     def __init__(self, proxies: Proxies, config: Config, seller: Seller):
         self.proxies: Proxies = proxies
+        self.price_delta: int = config.price_delta
         self.monitor_delay: int = config.monitor_delay
         self.monitor_timeout: int = config.monitor_timeout
         self.webhook = WebHook(config.webhook_url)
@@ -74,7 +75,6 @@ class OfferManager:
                     else:
                         results: list = data['results']
                         for result in results:
-                            logger.debug(f'Found new offer: {result}')
                             offer: Offer = Offer(
                                 id=result['id'],
                                 name=result['name'],
@@ -87,9 +87,14 @@ class OfferManager:
                                 price=result['price'],
                                 createTime=result['createTime'],
                             )
+                            logger.success(f'New offer found: {offer}')
                             if offer not in self.offers_seen:
                                 self.offers_seen.add(offer)
                                 self.webhook.send_offer(offer)
+
+                                is_acceptable: bool = offer.price >= offer.listing_price - self.price_delta
+                                await self.accept_offer(offer) if is_acceptable else await self.refuse_offer(offer)
+
                 elif r.status_code == 401:
                     logger.warning('Seller token expired, refreshing...')
                     await self.seller.refresh_token()
@@ -104,3 +109,34 @@ class OfferManager:
                     logger.warning('Proxy responded with non 200 code, retrying...')
                 else:
                     logger.error(f'Error while fetching offers: {e}')
+
+    async def accept_offer(self, offer: Offer) -> None:
+        json: dict = {
+            'name': offer.id,
+            'status': 'ACCEPTED',
+            'variantId': offer.variant_id,
+        }
+
+        r: Response = await self.seller.s.post(self.URL_OFFERS, json=json, proxy=self.proxies.random)
+
+        if r.status_code == 201:
+            logger.success(f'Offer {offer.id} accepted!')
+            self.webhook.send_accept_offer(offer)
+        else:
+            logger.error(f'Error while accepting offer {offer.id}: {r.status_code}')
+
+    async def refuse_offer(self, offer: Offer) -> None:
+        json: dict = {
+            'name': offer.id,
+            'status': 'REFUSED_PRICE_DISAGREEMENT',
+            'newListingPrice': offer.listing_price,
+            'variantId': offer.variant_id,
+        }
+
+        r: Response = await self.seller.s.post(self.URL_OFFERS, json=json, proxy=self.proxies.random)
+
+        if r.status_code == 201:
+            logger.success(f'Offer {offer.id} refused!')
+            self.webhook.send_refuse_offer(offer)
+        else:
+            logger.error(f'Error while refusing offer {offer.id}: {r.status_code}')

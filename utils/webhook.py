@@ -1,5 +1,6 @@
 import dataclasses
 import json
+from datetime import datetime
 
 from requests import post
 
@@ -52,30 +53,60 @@ class WebHook:
         except Exception as e:
             logger.error(f'Error while sending webhook: {e}')
 
-    def send_offer(self, offer) -> None:
-        try:
-            webhook_data = {
-                'embeds': [
-                    {
-                        'title': f'New offer found [{offer.sku}] 🔎',
-                        'url': 'https://sell.wethenew.com/fr/offers',
-                        'thumbnail': {'url': offer.image},
-                        'color': 0xC8DEDC,
-                        'fields': [
-                            {'name': 'Product', 'value': f'{offer.brand} - {offer.name}\n\u200b', 'inline': False},
-                            {'name': 'Size', 'value': offer.size, 'inline': True},
-                            {'name': 'Listing Price', 'value': f'{offer.listing_price}€', 'inline': True},
-                            {'name': 'Offer Price', 'value': f'{offer.price}€\n\u200b', 'inline': True},
-                            {'name': 'Created', 'value': offer.createTime, 'inline': False},
-                        ],
-                        'footer': {
-                            'text': self.default_embed.footer.text,
-                            'icon_url': self.default_embed.footer.icon_url
-                        }
+    def _build_webhook_data(self, offer, title: str, color: int, fields: list[dict]) -> dict:
+        return {
+            'embeds': [
+                {
+                    'title': title,
+                    'url': 'https://sell.wethenew.com/fr/offers',
+                    'thumbnail': {'url': offer.image},
+                    'color': color,
+                    'fields': fields,
+                    'footer': {
+                        'text': self.default_embed.footer.text,
+                        'icon_url': self.default_embed.footer.icon_url
                     }
-                ]
-            }
+                }
+            ],
+            'username': 'WeTheToolbox',
+            'avatar_url': 'https://s3-eu-west-1.amazonaws.com/tpd/logos/5c741846c666770001962f39/0x0.png'
+        }
 
+    def _send_webhook(self, webhook_data: dict) -> None:
+        try:
             post(self.webhook_url, headers=self.webhook_headers, data=json.dumps(webhook_data))
         except Exception as e:
-            print(str(e))
+            logger.error(f'Error while sending webhook: {e}')
+
+    def send_offer(self, offer) -> None:
+        fields: list[dict] = [
+            {'name': 'Product', 'value': f'{offer.brand} - {offer.name}', 'inline': False},
+            {'name': 'Size', 'value': offer.size, 'inline': True},
+            {'name': 'Listing Price', 'value': f'{offer.listing_price}€', 'inline': True},
+            {'name': 'Offer Price', 'value': f'{offer.price}€', 'inline': True},
+            {'name': 'Created', 'value': offer.createTime, 'inline': False},
+        ]
+        webhook_data: dict = self._build_webhook_data(offer, f'New offer found [{offer.sku}] 🔎', 0xC8DEDC, fields)
+        self._send_webhook(webhook_data)
+
+    def send_accept_offer(self, offer) -> None:
+        fields: list[dict] = [
+            {'name': 'Product', 'value': f'{offer.brand} - {offer.name}', 'inline': False},
+            {'name': 'Size', 'value': offer.size, 'inline': True},
+            {'name': 'Sale Price', 'value': f'{offer.price}€', 'inline': True},
+            {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
+            {'name': 'Accepted', 'value': datetime.utcnow().isoformat(), 'inline': False},
+        ]
+        webhook_data: dict = self._build_webhook_data(offer, f'Offer accepted [{offer.sku}] 🎉', 0xA0E062, fields)
+        self._send_webhook(webhook_data)
+
+    def send_refuse_offer(self, offer) -> None:
+        fields: list[dict] = [
+            {'name': 'Product', 'value': f'{offer.brand} - {offer.name}', 'inline': False},
+            {'name': 'Size', 'value': offer.size, 'inline': True},
+            {'name': 'Offer Price', 'value': f'{offer.price}€', 'inline': True},
+            {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
+            {'name': 'Refused', 'value': datetime.utcnow().isoformat(), 'inline': False},
+        ]
+        webhook_data: dict = self._build_webhook_data(offer, f'Offer refused [{offer.sku}] ❌', 0xFF0000, fields)
+        self._send_webhook(webhook_data)

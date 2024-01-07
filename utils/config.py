@@ -11,8 +11,9 @@ logger = Log('Config', LogLevel.DEBUG)
 
 class Config:
     def __init__(self):
-        self.monitor_delay: int | None = None
-        self.monitor_timeout: int | None = None
+        self.price_delta: int = 0
+        self.monitor_delay: int = 5
+        self.monitor_timeout: int = 10
         self.webhook_url: str | None = None
         self.wtn_email: str | None = None
         self.wtn_password: str | None = None
@@ -32,6 +33,7 @@ class Config:
 
     def get_env(self):
         try:
+            self.price_delta: int = int(self.get_env_variable('PRICE_DELTA'))
             self.monitor_delay: int = int(self.get_env_variable('MONITOR_DELAY'))
             self.monitor_timeout: int = int(self.get_env_variable('MONITOR_TIMEOUT'))
             self.webhook_url: str = self.get_env_variable('WEBHOOK_URL')

@@ -9,8 +9,7 @@
 - [What is WeTheNew?](#what-is-wethenew)
 - [What is WeTheToolbox?](#what-is-wethetoolbox)
 - [How to install WeTheToolbox?](#how-to-install-wethetoolbox)
-- [How to contribute?](#how-to-contribute)
-- [How to contact us?](#how-to-contact-us)
+- [How to contribute and contact us?](#how-to-contribute-and-contact-us)
 
 ***
 
@@ -48,8 +47,8 @@ their chances of successful transactions in the competitive world of sneaker res
 ### Our features (v1.0.0)
 
 - [x] Monitor offers: get notified when a new offer is available on your seller space
+- [x] Auto-accept offers: will automatically accept offers that meet your criteria
 - [ ] Monitor consignments: coming soon...
-- [ ] Auto-accept offers: coming soon...
 - [ ] List items: coming soon...
 
 ## 📦 How to install WeTheToolbox?
@@ -72,12 +71,16 @@ creating a `.env` file in the root directory of the project and adding the follo
 editor:
 
 ```dotenv
+ACCEPTABLE_DIFF=10
 MONITOR_DELAY=1
 MONITOR_TIMEOUT=5
 WEBHOOK_URL=your_webhook_url
 WETHENEW_EMAIL=your_wethenew_email
 WETHENEW_PASSWORD=your_wethenew_password
 ```
+
+- `ACCEPTABLE_DIFF` is the acceptable difference between the price of the offer and the price of the item in euros.
+  For example, if you list an item for 100€ and you set `ACCEPTABLE_DIFF` to 10, it will accept offers over 90€.
 
 ### Install Python and dependencies
 
