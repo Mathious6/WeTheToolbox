@@ -1,4 +1,5 @@
 from asyncio import sleep
+from random import randint
 
 from requests import Response
 
@@ -24,18 +25,19 @@ class ConsignManager:
 
         self.consign_seen: set[Consign] = set[Consign]()
 
-        self.params: dict = {
-            'take': '100'
-        }
-
     async def monitor_consigns(self) -> None:
         first_run: bool = True
         while True:
             await sleep(self.monitor_delay)
             try:
+                params: dict = {
+                    'take': '100',
+                    'nocache': randint(0, 999999999),
+                }
+
                 r: Response = await self.seller.s.get(
                     url=self.URL_CONSIGN_ALL,
-                    params=self.params,
+                    params=params,
                     proxy=self.proxies.random,
                 )
 
@@ -74,7 +76,8 @@ class ConsignManager:
                         for consign in self.consign_seen - current_consigns:
                             logger.info(f'Consign removed: {consign}')
                             self.consign_seen.remove(consign)
-                        logger.debug('Monitoring consigns...')
+                        cache: str = '' if r.headers['Cf-Cache-Status'] == 'MISS' else ' (cached)'
+                        logger.debug(f'Monitoring consigns{cache} [{len(self.consign_seen)} items]')
 
                 else:
                     logger.error(f'Error while fetching offers: {r.status_code}')

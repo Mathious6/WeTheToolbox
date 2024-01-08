@@ -60,11 +60,11 @@ class OfferManager:
                             )
                             logger.success(f'New offer found: {offer}')
                             if offer not in self.offers_seen:
-                                self.offers_seen.add(offer)
-                                self.webhook.send_offer(offer)
-
                                 is_acceptable: bool = offer.price >= offer.listing_price - self.price_delta
                                 await self.accept_offer(offer) if is_acceptable else await self.refuse_offer(offer)
+
+                                self.offers_seen.add(offer)
+                                self.webhook.send_offer(offer)
 
                 elif r.status_code == 401:
                     logger.warning('Seller token expired, refreshing...')
@@ -88,6 +88,7 @@ class OfferManager:
             'variantId': offer.variant_id,
         }
 
+        logger.info(f'Accepting offer {offer.id} ...')
         r: Response = await self.seller.s.post(self.URL_OFFERS, json=json, proxy=self.proxies.random)
 
         if r.status_code == 201:
@@ -104,6 +105,7 @@ class OfferManager:
             'variantId': offer.variant_id,
         }
 
+        logger.info(f'Refusing offer {offer.id} ...')
         r: Response = await self.seller.s.post(self.URL_OFFERS, json=json, proxy=self.proxies.random)
 
         if r.status_code == 201:

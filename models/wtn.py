@@ -27,7 +27,7 @@ class Offer:
         return hash(self.id)
 
     def __repr__(self):
-        return f'Offer(id={self.id}, sku={self.sku}, size={self.size}, price={self.price}'
+        return f'Offer(id={self.id}, sku={self.sku}, size={self.size}, price={self.price})'
 
 
 @dataclasses.dataclass

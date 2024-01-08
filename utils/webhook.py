@@ -54,12 +54,15 @@ class WebHook:
         except Exception as e:
             logger.error(f'Error while sending webhook: {e}')
 
-    def _build_webhook_data(self, image: str, title: str, color: int, fields: list[dict]) -> dict:
+    def _build_webhook_data(self, image: str, title: str, color: int, fields: list[dict], pid: int = None) -> dict:
+        url: str = 'https://sell.wethenew.com/fr/offers'
+        if pid:
+            url = f'https://sell.wethenew.com/fr/consignment/product/{pid}'
         return {
             'embeds': [
                 {
                     'title': title,
-                    'url': 'https://sell.wethenew.com/fr/offers',
+                    'url': url,
                     'thumbnail': {'url': image},
                     'color': color,
                     'fields': fields,
@@ -96,7 +99,7 @@ class WebHook:
             {'name': 'Size', 'value': offer.size, 'inline': True},
             {'name': 'Sale Price', 'value': f'{offer.price}€', 'inline': True},
             {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
-            {'name': 'Accepted', 'value': datetime.utcnow().isoformat(), 'inline': False},
+            {'name': 'Accepted', 'value': datetime.utcnow().isoformat()[:-3] + 'Z', 'inline': False},
         ]
         webhook_data: dict = self._build_webhook_data(offer.image, f'Offer accepted [{offer.sku}] 🎉', 0xA0E062, fields)
         self._send_webhook(webhook_data)
@@ -107,7 +110,7 @@ class WebHook:
             {'name': 'Size', 'value': offer.size, 'inline': True},
             {'name': 'Offer Price', 'value': f'{offer.price}€', 'inline': True},
             {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
-            {'name': 'Refused', 'value': datetime.utcnow().isoformat(), 'inline': False},
+            {'name': 'Refused', 'value': datetime.utcnow().isoformat()[:-3] + 'Z', 'inline': False},
         ]
         webhook_data: dict = self._build_webhook_data(offer.image, f'Offer refused [{offer.sku}] ❌', 0xFF0000, fields)
         self._send_webhook(webhook_data)
@@ -116,9 +119,9 @@ class WebHook:
         updated_sizes: list[str] = []
         for size in consign.sizes:
             if size in added_sizes:
-                updated_sizes.append('**+ ' + size + '**')
+                updated_sizes.append('**' + size + '**')
             else:
-                updated_sizes.append('  ' + size)
+                updated_sizes.append('' + size)
 
         fields: list[dict] = [
             {
@@ -128,6 +131,6 @@ class WebHook:
             },
         ]
         webhook_data: dict = self._build_webhook_data(
-            consign.image, f'{consign.brand} - {consign.name} 🔎', 0x000000, fields
+            consign.image, f'{consign.brand} - {consign.name} 🔎', 0x000000, fields, consign.id
         )
         self._send_webhook(webhook_data)
