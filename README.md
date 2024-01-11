@@ -53,7 +53,7 @@ their chances of successful transactions in the competitive world of sneaker res
 
 ## 📦 How to install WeTheToolbox?
 
-### Dowload the repository
+### Download the repository
 
 You can download the repository by clicking on the green button "Code" and then "Download ZIP" or by using the following
 command:
@@ -71,7 +71,8 @@ creating a `.env` file in the root directory of the project and adding the follo
 editor:
 
 ```dotenv
-ACCEPTABLE_DIFF=10
+MODE=0
+PRICE_DELTA=10
 MONITOR_DELAY=1
 MONITOR_TIMEOUT=5
 WEBHOOK_URL=your_webhook_url
@@ -79,8 +80,15 @@ WETHENEW_EMAIL=your_wethenew_email
 WETHENEW_PASSWORD=your_wethenew_password
 ```
 
-- `ACCEPTABLE_DIFF` is the acceptable difference between the price of the offer and the price of the item in euros.
-  For example, if you list an item for 100€ and you set `ACCEPTABLE_DIFF` to 10, it will accept offers over 90€.
+- `PRICE_DELTA` is the acceptable difference between the price of the offer and the price of the item in euros.
+  For example, if you list an item for 100€ and you set `PRICE_DELTA` to 10, it will accept offers over 90€.
+- `MODE` is the mode of the program, here is the list of the available modes:
+
+| Mode | Snipe offers | Snipe consignments | Monitor consignments | Monitor sell now |
+|:----:|:------------:|:------------------:|:--------------------:|:----------------:|
+|  0   |      ✔️      |         ❌          |          ✔️          |        ❌         |
+|  1   |      ✔️      |         ❌          |          ❌           |        ❌         |
+|  2   |      ❌       |         ❌          |          ✔️          |        ❌         |
 
 ### Install Python and dependencies
 

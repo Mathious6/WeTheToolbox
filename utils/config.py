@@ -17,6 +17,7 @@ class Config:
         self.webhook_url: str | None = None
         self.wtn_email: str | None = None
         self.wtn_password: str | None = None
+        self.mode: int = 0
         self.get_env()
 
     @staticmethod
@@ -33,6 +34,7 @@ class Config:
 
     def get_env(self):
         try:
+            self.mode: int = int(self.get_env_variable('MODE'))
             self.price_delta: int = int(self.get_env_variable('PRICE_DELTA'))
             self.monitor_delay: int = int(self.get_env_variable('MONITOR_DELAY'))
             self.monitor_timeout: int = int(self.get_env_variable('MONITOR_TIMEOUT'))

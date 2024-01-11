@@ -29,10 +29,21 @@ async def main():
     offers: OfferManager = OfferManager(proxies, config, seller)
     consigns: ConsignManager = ConsignManager(proxies, config, seller)
 
-    task1 = asyncio.create_task(offers.monitor_offers())
-    task2 = asyncio.create_task(consigns.monitor_consigns())
+    async def start_mode(mode):
+        mode_actions: dict = {
+            0: (offers.monitor_offers(), consigns.monitor_consigns()),
+            1: (offers.monitor_offers(),),
+            2: (consigns.monitor_consigns(),)
+        }
 
-    await asyncio.gather(task1, task2)
+        actions = mode_actions.get(mode)
+        if actions:
+            logger.info(f'Starting mode {mode}: {" + ".join(action.__name__ for action in actions)}')
+            await asyncio.gather(*actions)
+        else:
+            logger.error(f'Invalid mode: {mode}')
+
+    await start_mode(config.mode)
 
 
 if __name__ == '__main__':
