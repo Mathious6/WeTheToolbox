@@ -21,6 +21,8 @@ class Seller:
     SESSION_URL: str = 'https://sell.wethenew.com/api/auth/session'
     PROFILE_URL: str = 'https://api-sell.wethenew.com/sellers/me'
     LISTING_URL: str = 'https://api-sell.wethenew.com/listings'
+    PAYMENT_URL: str = 'https://api-sell.wethenew.com/payment-infos'
+    SHIPPING_URL: str = 'https://api-sell.wethenew.com/addresses?type=shipping'
 
     def __init__(self, session: Session, proxies: Proxies, config: Config, ua: str):
         self.s: Session = session
@@ -28,28 +30,24 @@ class Seller:
         self.config: Config = config
         self.csrf_token: str | None = None
         self.access_token: str | None = None
+        self.address_uuid: str | None = None
+        self.payment_uuid: str | None = None
         self.listing: list[Product] | None = None
 
         self.s.headers['content-type'] = 'application/json'
         self.s.headers['user-agent'] = ua
         self.s.timeout_seconds = config.monitor_timeout
 
-    async def _initialize_session(self):
+    async def init(self) -> Session:
         self.csrf_token = await self._get_csrf_token()
         self.access_token = await self._get_access_token()
         await self._login()
-
-    async def init(self) -> Session:
-        await self._initialize_session()
-        self.listing = await self.get_listing()
+        self.listing = await self._get_listing()
+        self.address_uuid, self.payment_uuid = await self._get_uuids()
         return self.s
 
-    async def refresh_token(self) -> Session:
-        await self._initialize_session()
-        return self.s
-
-    async def _retry_with_delay(self, func, max_attempds: int) -> any:
-        for attempt in range(max_attempds):
+    async def _retry_with_delay(self, func, max_attempts: int) -> any:
+        for attempt in range(max_attempts):
             try:
                 await sleep(self.config.monitor_delay)
                 return await func()
@@ -61,8 +59,8 @@ class Seller:
                 else:
                     logger.error(f'Error while fetching offers: {e}')
 
-                logger.debug(f'Retrying ({attempt + 1}/{max_attempds})')
-        logger.error('Maximun attempts reached, failed to execute the operation')
+                logger.debug(f'Retrying ({attempt + 1}/{max_attempts})')
+        logger.error('Maximum attempts reached, failed to execute the operation')
         return None
 
     async def _get_csrf_token(self) -> str | None:
@@ -113,7 +111,7 @@ class Seller:
 
         return await self._retry_with_delay(attempt_login, 5)
 
-    async def get_listing(self) -> list[Product] | None:
+    async def _get_listing(self) -> list[Product] | None:
         page_size: int = 100
 
         async def attempt_fetch():
@@ -131,11 +129,39 @@ class Seller:
                     break
 
                 listing.extend(
-                    [Product(name=result['product']['name'], size=result['product']['europeanSize']) for result in
-                     results])
+                    [
+                        Product(
+                            id=result['name'],
+                            name=result['product']['name'],
+                            image=result['product']['image'],
+                            size=result['product']['europeanSize'],
+                            price=result['price'],
+                        ) for result in results
+                    ]
+                )
                 skip += page_size
 
             logger.success(f'Successfully fetched {len(listing)} products from listing')
             return listing
+
+        return await self._retry_with_delay(attempt_fetch, 5)
+
+    async def _get_uuids(self) -> tuple[str, str] | None:
+        async def attempt_fetch():
+            r: Response = await self.s.get(url=self.PAYMENT_URL, proxy=self.proxies.random)
+            if r.status_code != 200:
+                raise Exception(f'Failed to fetch uuids, status code: {r.status_code}')
+            payment_uuid: str = r.json()[0].get('uuid')
+
+            r: Response = await self.s.get(url=self.SHIPPING_URL, proxy=self.proxies.random)
+            if r.status_code != 200:
+                raise Exception(f'Failed to fetch uuids, status code: {r.status_code}')
+            address_uuid: str = r.json().get('uuid')
+
+            if not address_uuid or not payment_uuid:
+                raise Exception('Failed to fetch uuids')
+
+            logger.success('Successfully fetched uuids')
+            return address_uuid, payment_uuid
 
         return await self._retry_with_delay(attempt_fetch, 5)

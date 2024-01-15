@@ -67,7 +67,7 @@ class OfferManager:
 
                 elif r.status_code == 401:
                     logger.warning('Seller token expired, refreshing...')
-                    await self.seller.refresh_token()
+                    await self.seller.init()
                 else:
                     logger.error(f'Error while fetching offers: {r.status_code}')
                     continue

@@ -54,6 +54,9 @@ class Consign:
 class Product:
     name: str
     size: str
+    image: str = None
+    id: str = None
+    price: int = None
 
     def __repr__(self):
         return f'Product(name={self.name}, size={self.size})'

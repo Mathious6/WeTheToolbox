@@ -4,7 +4,7 @@ from datetime import datetime
 
 from requests import post
 
-from models.wtn import Offer, Consign
+from models.wtn import Offer, Consign, Product
 from utils.log import Log, LogLevel
 
 logger: Log = Log('Webhook', LogLevel.DEBUG)
@@ -54,7 +54,9 @@ class WebHook:
         except Exception as e:
             logger.error(f'Error while sending webhook: {e}')
 
-    def _build_webhook_data(self, image: str, title: str, color: int, fields: list[dict], pid: int = None) -> dict:
+    def _build_webhook_data(
+            self, image: str | None, title: str, color: int, fields: list[dict], pid: int = None
+    ) -> dict:
         url: str = 'https://sell.wethenew.com/fr/offers'
         if pid:
             url = f'https://sell.wethenew.com/fr/consignment/product/{pid}'
@@ -116,7 +118,7 @@ class WebHook:
         self._send_webhook(webhook_data)
 
     def send_consign(self, consign: Consign, added_sizes: set[str]) -> None:
-        if self.webhook_url is None:
+        if not self.webhook_url:
             logger.debug('Webhook URL is None, not sending webhook')
             return
         updated_sizes: list[str] = []
@@ -136,4 +138,13 @@ class WebHook:
         webhook_data: dict = self._build_webhook_data(
             consign.image, f'{consign.brand} - {consign.name} 🔎', 0x000000, fields, consign.id
         )
+        self._send_webhook(webhook_data)
+
+    def send_accept_consign(self, product: Product) -> None:
+        fields: list[dict] = [
+            {'name': 'Product', 'value': f'{product.name}', 'inline': False},
+            {'name': 'Size', 'value': product.size, 'inline': True},
+            {'name': 'Consignment Price', 'value': f'{product.price}€', 'inline': True},
+        ]
+        webhook_data: dict = self._build_webhook_data(None, 'Consignment placed 🎉', 0xA0E062, fields)
         self._send_webhook(webhook_data)
