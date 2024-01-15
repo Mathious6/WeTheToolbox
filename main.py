@@ -26,6 +26,8 @@ async def main():
     config: Config = Config()
 
     seller: Seller = Seller(s, proxies, config, ua)
+    await seller.init()
+
     offers: OfferManager = OfferManager(proxies, config, seller)
     consigns: ConsignManager = ConsignManager(proxies, config, seller)
 

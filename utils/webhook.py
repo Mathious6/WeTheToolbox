@@ -116,6 +116,9 @@ class WebHook:
         self._send_webhook(webhook_data)
 
     def send_consign(self, consign: Consign, added_sizes: set[str]) -> None:
+        if self.webhook_url is None:
+            logger.debug('Webhook URL is None, not sending webhook')
+            return
         updated_sizes: list[str] = []
         for size in consign.sizes:
             if size in added_sizes:

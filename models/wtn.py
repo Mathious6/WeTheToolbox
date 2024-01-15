@@ -48,3 +48,20 @@ class Consign:
 
     def __repr__(self):
         return f'Consign(id={self.id}, sizes={self.sizes})'
+
+
+@dataclasses.dataclass
+class Product:
+    name: str
+    size: str
+
+    def __repr__(self):
+        return f'Product(name={self.name}, size={self.size})'
+
+    def __eq__(self, other):
+        if not isinstance(other, Product):
+            return NotImplemented
+        return self.name == other.name and self.size == other.size
+
+    def __hash__(self):
+        return hash(self.name + self.size)

@@ -20,7 +20,7 @@ class OfferManager:
         self.price_delta: int = config.price_delta
         self.monitor_delay: int = config.monitor_delay
         self.monitor_timeout: int = config.monitor_timeout
-        self.webhook = WebHook(config.webhook_url)
+        self.webhook_s = WebHook(config.webhook_success)
         self.seller: Seller = seller
 
         self.offers_seen: set[Offer] = set[Offer]()
@@ -64,7 +64,6 @@ class OfferManager:
                                 await self.accept_offer(offer) if is_acceptable else await self.refuse_offer(offer)
 
                                 self.offers_seen.add(offer)
-                                self.webhook.send_offer(offer)
 
                 elif r.status_code == 401:
                     logger.warning('Seller token expired, refreshing...')
@@ -90,10 +89,11 @@ class OfferManager:
 
         logger.info(f'Accepting offer {offer.id} ...')
         r: Response = await self.seller.s.post(self.URL_OFFERS, json=json, proxy=self.proxies.random)
+        # self.webhook_s.send_offer(offer)
 
         if r.status_code == 201:
             logger.success(f'Offer {offer.id} accepted!')
-            self.webhook.send_accept_offer(offer)
+            self.webhook_s.send_accept_offer(offer)
         else:
             logger.error(f'Error while accepting offer {offer.id}: {r.status_code}')
 
@@ -107,9 +107,10 @@ class OfferManager:
 
         logger.info(f'Refusing offer {offer.id} ...')
         r: Response = await self.seller.s.post(self.URL_OFFERS, json=json, proxy=self.proxies.random)
+        # self.webhook_s.send_offer(offer)
 
         if r.status_code == 201:
             logger.success(f'Offer {offer.id} refused!')
-            self.webhook.send_refuse_offer(offer)
+            self.webhook_s.send_refuse_offer(offer)
         else:
             logger.error(f'Error while refusing offer {offer.id}: {r.status_code}')

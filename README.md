@@ -75,7 +75,8 @@ MODE=0
 PRICE_DELTA=10
 MONITOR_DELAY=1
 MONITOR_TIMEOUT=5
-WEBHOOK_URL=your_webhook_url
+WEBHOOK_SUCCESS=your_webhook_success
+WEBHOOK_MONITOR=your_webhook_monitor_optional
 WETHENEW_EMAIL=your_wethenew_email
 WETHENEW_PASSWORD=your_wethenew_password
 ```
@@ -84,11 +85,11 @@ WETHENEW_PASSWORD=your_wethenew_password
   For example, if you list an item for 100€ and you set `PRICE_DELTA` to 10, it will accept offers over 90€.
 - `MODE` is the mode of the program, here is the list of the available modes:
 
-| Mode | Snipe offers | Snipe consignments | Monitor consignments | Monitor sell now |
-|:----:|:------------:|:------------------:|:--------------------:|:----------------:|
-|  0   |      ✔️      |         ❌          |          ✔️          |        ❌         |
-|  1   |      ✔️      |         ❌          |          ❌           |        ❌         |
-|  2   |      ❌       |         ❌          |          ✔️          |        ❌         |
+| Mode | Snipe offers | Snipe consignments |
+|:----:|:------------:|:------------------:|
+|  0   |      ✔️      |         ✔️         |
+|  1   |      ✔️      |         ❌          |
+|  2   |      ❌       |         ✔️         |
 
 ### Install Python and dependencies
 

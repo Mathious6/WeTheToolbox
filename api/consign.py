@@ -4,7 +4,7 @@ from random import randint
 from requests import Response
 
 from api.seller import Seller
-from models.wtn import Consign
+from models.wtn import Consign, Product
 from utils.config import Config
 from utils.log import LogLevel, Log
 from utils.proxy import Proxies
@@ -20,7 +20,7 @@ class ConsignManager:
         self.proxies: Proxies = proxies
         self.monitor_delay: int = config.monitor_delay
         self.monitor_timeout: int = config.monitor_timeout
-        self.webhook = WebHook(config.webhook_url)
+        self.webhook_m = WebHook(config.webhook_monitor)
         self.seller: Seller = seller
 
         self.consign_seen: set[Consign] = set[Consign]()
@@ -64,7 +64,8 @@ class ConsignManager:
                                     removed_sizes = set(existing_consign.sizes) - set(consign.sizes)
                                     if added_sizes:
                                         logger.info(f'Consign {consign.id} has added sizes: {added_sizes}')
-                                        self.webhook.send_consign(consign, added_sizes)
+                                        await self.place_consignment(consign.name, added_sizes)
+                                        self.webhook_m.send_consign(consign, added_sizes)
                                     if removed_sizes:
                                         logger.info(f'Consign {consign.id} has removed sizes: {removed_sizes}')
                                     self.consign_seen.remove(existing_consign)
@@ -72,7 +73,7 @@ class ConsignManager:
                             else:
                                 logger.info(f'New consign: {consign}')
                                 self.consign_seen.add(consign)
-                                self.webhook.send_consign(consign, set(consign.sizes))
+                                self.webhook_m.send_consign(consign, set(consign.sizes))
                         for consign in self.consign_seen - current_consigns:
                             logger.info(f'Consign removed: {consign}')
                             self.consign_seen.remove(consign)
@@ -90,3 +91,11 @@ class ConsignManager:
                     logger.warning('Proxy responded with non 200 code, retrying...')
                 else:
                     logger.error(f'Error while fetching offers: {e}')
+
+    async def place_consignment(self, name: str, sizes: set[str]) -> None:
+        new_products: list[Product] = [Product(name, size) for size in sizes]
+        for product in new_products:
+            if product in self.seller.listing:
+                logger.success(f'{product} is ready to be consigned')
+            else:
+                logger.error(f'{product} is not in your listing, cannot consign')

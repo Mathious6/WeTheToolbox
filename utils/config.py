@@ -14,7 +14,8 @@ class Config:
         self.price_delta: int = 0
         self.monitor_delay: int = 5
         self.monitor_timeout: int = 10
-        self.webhook_url: str | None = None
+        self.webhook_success: str | None = None
+        self.webhook_monitor: str | None = None
         self.wtn_email: str | None = None
         self.wtn_password: str | None = None
         self.mode: int = 0
@@ -38,7 +39,8 @@ class Config:
             self.price_delta: int = int(self.get_env_variable('PRICE_DELTA'))
             self.monitor_delay: int = int(self.get_env_variable('MONITOR_DELAY'))
             self.monitor_timeout: int = int(self.get_env_variable('MONITOR_TIMEOUT'))
-            self.webhook_url: str = self.get_env_variable('WEBHOOK_URL')
+            self.webhook_success: str = self.get_env_variable('WEBHOOK_SUCCESS')
+            self.webhook_monitor: str = self.get_env_variable('WEBHOOK_MONITOR')
             self.wtn_email: str = self.get_env_variable('WETHENEW_EMAIL')
             self.wtn_password: str = self.get_env_variable('WETHENEW_PASSWORD', is_secret=True)
             print()

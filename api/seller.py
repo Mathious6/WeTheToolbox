@@ -3,6 +3,7 @@ from asyncio import sleep
 from noble_tls import Session
 from requests import Response
 
+from models.wtn import Product
 from utils.captcha import ReCaptchaV3
 from utils.config import Config
 from utils.log import Log, LogLevel
@@ -19,6 +20,7 @@ class Seller:
     CRED_URL: str = 'https://sell.wethenew.com/api/auth/callback/credentials'
     SESSION_URL: str = 'https://sell.wethenew.com/api/auth/session'
     PROFILE_URL: str = 'https://api-sell.wethenew.com/sellers/me'
+    LISTING_URL: str = 'https://api-sell.wethenew.com/listings'
 
     def __init__(self, session: Session, proxies: Proxies, config: Config, ua: str):
         self.s: Session = session
@@ -26,15 +28,24 @@ class Seller:
         self.config: Config = config
         self.csrf_token: str | None = None
         self.access_token: str | None = None
+        self.listing: list[Product] | None = None
 
         self.s.headers['content-type'] = 'application/json'
         self.s.headers['user-agent'] = ua
         self.s.timeout_seconds = config.monitor_timeout
 
-    async def refresh_token(self) -> Session:
-        self.csrf_token: str = await self._get_csrf_token()
-        self.access_token: str = await self._get_access_token()
+    async def _initialize_session(self):
+        self.csrf_token = await self._get_csrf_token()
+        self.access_token = await self._get_access_token()
         await self._login()
+
+    async def init(self) -> Session:
+        await self._initialize_session()
+        self.listing = await self.get_listing()
+        return self.s
+
+    async def refresh_token(self) -> Session:
+        await self._initialize_session()
         return self.s
 
     async def _retry_with_delay(self, func, max_attempds: int) -> any:
@@ -101,3 +112,30 @@ class Seller:
             raise Exception(f'Failed to login, status code: {r.status_code}')
 
         return await self._retry_with_delay(attempt_login, 5)
+
+    async def get_listing(self) -> list[Product] | None:
+        page_size: int = 100
+
+        async def attempt_fetch():
+            listing: list[Product] = []
+            skip: int = 0
+            while True:
+                params: dict = {'take': page_size, 'skip': skip}
+                r: Response = await self.s.get(url=self.LISTING_URL, proxy=self.proxies.random, params=params)
+
+                if r.status_code != 200:
+                    raise Exception(f'Failed to fetch listing, status code: {r.status_code}')
+
+                results: list = r.json().get('results', [])
+                if not results:
+                    break
+
+                listing.extend(
+                    [Product(name=result['product']['name'], size=result['product']['europeanSize']) for result in
+                     results])
+                skip += page_size
+
+            logger.success(f'Successfully fetched {len(listing)} products from listing')
+            return listing
+
+        return await self._retry_with_delay(attempt_fetch, 5)
