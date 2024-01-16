@@ -68,3 +68,13 @@ class Product:
 
     def __hash__(self):
         return hash(self.name + self.size)
+
+
+@dataclasses.dataclass
+class Account:
+    email: str
+    password: str
+    price_delta: int = 0
+
+    def __repr__(self):
+        return f'Account(email={self.email}, price_delta={self.price_delta})'

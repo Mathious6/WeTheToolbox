@@ -23,15 +23,16 @@ class Log:
         LogLevel.CRITICAL: Fore.LIGHTRED_EX
     }
 
-    def __init__(self, name: str, level: int = LogLevel.DEBUG):
+    def __init__(self, name: str, level: int = LogLevel.DEBUG, task_number: int | None = None):
         self.name: str = name.upper()
         self.level: int = level
+        self.task_number: int | None = task_number
 
-    def _log(self, level: int, message: str, task_number: int = None, line_before: int = 0, line_after: int = 0):
+    def _log(self, level: int, message: str, line_before: int = 0, line_after: int = 0):
         if self.level <= level:
             print() if line_before else None
             timestamp = datetime.now().strftime('%H:%M:%S.%f')
-            task_str = f"[{task_number}] " if task_number is not None else ""
+            task_str = f"[{self.task_number}] " if self.task_number is not None else ""
             color = self.COLORS.get(level, Fore.WHITE)
             print(f'{color}[{timestamp}] [{self.name}] {task_str}{message}{Style.RESET_ALL}')
             print() if line_after else None
@@ -42,23 +43,23 @@ class Log:
             print(f"{Fore.BLUE}{message}{Style.RESET_ALL}")
             print() if line_after else None
 
-    def debug(self, message: str, task_number: int = None, line_before: int = 0, line_after: int = 0):
-        self._log(LogLevel.DEBUG, message, task_number, line_before, line_after)
+    def debug(self, message: str, line_before: int = 0, line_after: int = 0):
+        self._log(LogLevel.DEBUG, message, line_before, line_after)
 
-    def info(self, message: str, task_number: int = None, line_before: int = 0, line_after: int = 0):
-        self._log(LogLevel.INFO, message, task_number, line_before, line_after)
+    def info(self, message: str, line_before: int = 0, line_after: int = 0):
+        self._log(LogLevel.INFO, message, line_before, line_after)
 
-    def success(self, message: str, task_number: int = None, line_before: int = 0, line_after: int = 0):
-        self._log(LogLevel.SUCCESS, message, task_number, line_before, line_after)
+    def success(self, message: str, line_before: int = 0, line_after: int = 0):
+        self._log(LogLevel.SUCCESS, message, line_before, line_after)
 
-    def warning(self, message: str, task_number: int = None, line_before: int = 0, line_after: int = 0):
-        self._log(LogLevel.WARNING, message, task_number, line_before, line_after)
+    def warning(self, message: str, line_before: int = 0, line_after: int = 0):
+        self._log(LogLevel.WARNING, message, line_before, line_after)
 
-    def error(self, message: str, task_number: int = None, line_before: int = 0, line_after: int = 0):
-        self._log(LogLevel.ERROR, message, task_number, line_before, line_after)
+    def error(self, message: str, line_before: int = 0, line_after: int = 0):
+        self._log(LogLevel.ERROR, message, line_before, line_after)
 
-    def critical(self, message: str, task_number: int = None, line_before: int = 0, line_after: int = 0):
-        self._log(LogLevel.CRITICAL, message, task_number, line_before, line_after)
+    def critical(self, message: str, line_before: int = 0, line_after: int = 0):
+        self._log(LogLevel.CRITICAL, message, line_before, line_after)
 
     def exception(self):
         if self.level <= LogLevel.DEBUG:
