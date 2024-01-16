@@ -9,7 +9,7 @@ from utils.config import Config
 from utils.log import Log, LogLevel
 from utils.proxy import Proxies
 
-logger = Log('Seller', LogLevel.DEBUG)
+logger = Log('Seller', LogLevel.INFO)
 RECAPTCHAV3_ANCHOR = ('https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LeJBSAdAAAAACyoWxmCY7q5G-_6GnKBdpF4raee&co'
                       '=aHR0cHM6Ly9zZWxsLndldGhlbmV3LmNvbTo0NDM.&hl=en&v=u-xcq3POCWFlCr3x8_IPxgPu&size=invisible&cb'
                       '=k30rgwzggens')
@@ -41,9 +41,10 @@ class Seller:
     async def init(self) -> Session:
         self.csrf_token = await self._get_csrf_token()
         self.access_token = await self._get_access_token()
-        await self._login()
+        firstname: str = await self._login()
         self.listing = await self._get_listing()
         self.address_uuid, self.payment_uuid = await self._get_uuids()
+        logger.success(f'Logged in as {firstname}, {len(self.listing)} products in listing, ready to sell!')
         return self.s
 
     async def _retry_with_delay(self, func, max_attempts: int) -> any:
@@ -67,7 +68,7 @@ class Seller:
         async def attempt_fetch():
             r: Response = await self.s.get(url=self.CSRF_URL, proxy=self.proxies.random)
             if r.status_code == 200 and 'csrfToken' in r.json():
-                logger.success('Successfully retrieved csrfToken')
+                logger.debug('Successfully retrieved csrfToken')
                 return r.json()['csrfToken']
             raise Exception(f'Failed to retrieve csrfToken, status code: {r.status_code}')
 
@@ -94,19 +95,20 @@ class Seller:
 
             r: Response = await self.s.get(url=self.SESSION_URL, proxy=self.proxies.random)
             if r.status_code == 200 and r.json().get('user').get('accessToken'):
-                logger.success('Successfully retrieved accessToken token')
+                logger.debug('Successfully retrieved accessToken token')
                 return r.json().get('user').get('accessToken')
             raise Exception('Failed to retrieve accessToken token')
 
         return await self._retry_with_delay(attempt_fetch, 5)
 
-    async def _login(self) -> None:
+    async def _login(self) -> str:
         async def attempt_login():
             self.s.headers['authorization'] = f'Bearer {self.access_token}'
             r: Response = await self.s.get(url=self.PROFILE_URL, proxy=self.proxies.random)
             if r.status_code == 200:
-                logger.success(f'Logged in as {r.json().get("firstname")}')
-                return
+                firstname: str = r.json().get('firstname')
+                logger.debug(f'Logged in as {firstname}')
+                return firstname
             raise Exception(f'Failed to login, status code: {r.status_code}')
 
         return await self._retry_with_delay(attempt_login, 5)
@@ -141,7 +143,7 @@ class Seller:
                 )
                 skip += page_size
 
-            logger.success(f'Successfully fetched {len(listing)} products from listing')
+            logger.debug(f'Successfully fetched {len(listing)} products from listing')
             return listing
 
         return await self._retry_with_delay(attempt_fetch, 5)
@@ -161,7 +163,7 @@ class Seller:
             if not address_uuid or not payment_uuid:
                 raise Exception('Failed to fetch uuids')
 
-            logger.success('Successfully fetched uuids')
+            logger.debug('Successfully fetched uuids')
             return address_uuid, payment_uuid
 
         return await self._retry_with_delay(attempt_fetch, 5)

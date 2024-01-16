@@ -10,7 +10,7 @@ from utils.log import LogLevel, Log
 from utils.proxy import Proxies
 from utils.webhook import WebHook
 
-logger: Log = Log('Consign', LogLevel.DEBUG)
+logger: Log = Log('Consign', LogLevel.INFO)
 
 
 class ConsignManager:
@@ -65,11 +65,11 @@ class ConsignManager:
                                     added_sizes = set(consign.sizes) - set(existing_consign.sizes)
                                     removed_sizes = set(existing_consign.sizes) - set(consign.sizes)
                                     if added_sizes:
-                                        logger.info(f'Consign {consign.id} has added sizes: {added_sizes}')
+                                        logger.info(f'New size: {consign} + {added_sizes}')
                                         await self.place_consignment(consign.name, consign.id, added_sizes)
                                         self.webhook_m.send_consign(consign, added_sizes)
                                     if removed_sizes:
-                                        logger.info(f'Consign {consign.id} has removed sizes: {removed_sizes}')
+                                        logger.debug(f'Deleted size: {consign} - {removed_sizes}')
                                     self.consign_seen.remove(existing_consign)
                                     self.consign_seen.add(consign)
                             else:
@@ -78,7 +78,7 @@ class ConsignManager:
                                 self.consign_seen.add(consign)
                                 self.webhook_m.send_consign(consign, set(consign.sizes))
                         for consign in self.consign_seen - current_consigns:
-                            logger.info(f'Consign removed: {consign}')
+                            logger.debug(f'Consign removed: {consign}')
                             self.consign_seen.remove(consign)
                         cache: str = '' if r.headers['Cf-Cache-Status'] == 'MISS' else ' (cached)'
                         logger.debug(f'Monitoring consigns{cache} [{len(self.consign_seen)} items]')

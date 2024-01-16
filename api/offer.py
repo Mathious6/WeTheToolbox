@@ -9,7 +9,7 @@ from utils.log import Log, LogLevel
 from utils.proxy import Proxies
 from utils.webhook import WebHook
 
-logger: Log = Log('Offer', LogLevel.DEBUG)
+logger: Log = Log('Offer', LogLevel.INFO)
 
 
 class OfferManager:
@@ -22,8 +22,6 @@ class OfferManager:
         self.monitor_timeout: int = config.monitor_timeout
         self.webhook_s = WebHook(config.webhook_success)
         self.seller: Seller = seller
-
-        self.offers_seen: set[Offer] = set[Offer]()
 
         self.params: dict = {
             'take': '100'
@@ -58,12 +56,10 @@ class OfferManager:
                                 price=result['price'],
                                 createTime=result['createTime'],
                             )
-                            logger.success(f'New offer found: {offer}')
-                            if offer not in self.offers_seen:
-                                is_acceptable: bool = offer.price >= offer.listing_price - self.price_delta
-                                await self.accept_offer(offer) if is_acceptable else await self.refuse_offer(offer)
 
-                                self.offers_seen.add(offer)
+                            logger.success(f'New offer found: {offer}')
+                            is_acceptable: bool = offer.price >= offer.listing_price - self.price_delta
+                            await self.accept_offer(offer) if is_acceptable else await self.refuse_offer(offer)
 
                 elif r.status_code == 401:
                     logger.warning('Seller token expired, refreshing...')
