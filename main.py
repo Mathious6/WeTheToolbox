@@ -5,9 +5,9 @@ from colorama import init
 from fake_useragent import UserAgent
 from noble_tls import Session, Client
 
+from api.consign import ConsignManager
 from api.offer import OfferManager
 from api.seller import Seller
-from models.wtn import Account
 from utils.config import Config
 from utils.log import Log, LogLevel
 from utils.proxy import Proxies
@@ -20,20 +20,26 @@ async def main():
     await noble_tls.update_if_necessary()
     proxies: Proxies = Proxies()
     config: Config = Config()
+    sellers: list[Seller] = []
 
-    async def handle_account(account: Account, n: int):
-        logger.info(f'Starting task {n} for {account.email}')
+    for task, account in enumerate(config.accounts, start=1):
         s: Session = Session(client=Client.CHROME_120, random_tls_extension_order=True)
         ua: str = UserAgent().random
 
-        seller: Seller = Seller(proxies, config, s, ua, account, n)
-        offers: OfferManager = OfferManager(seller)
-
+        seller: Seller = Seller(proxies, config, s, ua, account, task)
         await seller.init()
+        sellers.append(seller)
+
+    async def start_offer(x: Seller):
+        offers: OfferManager = OfferManager(x)
         await offers.monitor_offers()
 
-    tasks = [handle_account(account, task) for task, account in enumerate(config.accounts, start=1)]
-    await asyncio.gather(*tasks)
+    async def start_consign(x: list[Seller]):
+        consigns: ConsignManager = ConsignManager(x)
+        await consigns.monitor_consigns()
+
+    offer_tasks = [start_offer(x) for x in sellers]
+    await asyncio.gather(start_consign(sellers), *offer_tasks)
 
 
 if __name__ == '__main__':
