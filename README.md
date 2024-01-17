@@ -44,11 +44,12 @@ intuitive Command-Line Interface (CLI), simplifying the process of connecting wi
 By joining the WeTheToolbox journey, sellers can now effortlessly tap into the bustling market of WeTheNew, enhancing
 their chances of successful transactions in the competitive world of sneaker reselling.
 
-### Our features (v1.0.0)
+### Our features (v1.4.0)
 
 - [x] Monitor offers: get notified when a new offer is available on your seller space
 - [x] Auto-accept offers: will automatically accept offers that meet your criteria
-- [ ] Monitor consignments: coming soon...
+- [x] Monitor consignments: get notified when a new consignment is available
+- [x] Auto-accept consignments: will automatically consign items from your listing
 - [ ] List items: coming soon...
 
 ## 📦 How to install WeTheToolbox?
@@ -66,30 +67,36 @@ git clone https://github.com/Mathious6/WeTheToolbox.git
 
 To use WeTheToolbox, you need to have a [WeTheNew seller account](https://sell.wethenew.com/fr). If you don't have one,
 you can create one. Once you have an account, you can use WeTheToolbox to monitor offers and consignments, auto-accept
-offers, and list items. To do so, you need to provide your WeTheNew credentials to toolbox. You can do this by
-creating a `.env` file in the root directory of the project and adding the following lines with your favorite text
-editor:
+offers, and list items. To do so, you need to provide your WeTheNew credentials to the toolbox. You can do this by
+creating an `accounts.csv` file in the root directory of the project and filling it with your credentials following the
+format `email,password,price_delta`. For example:
 
-```dotenv
-MODE=0
-PRICE_DELTA=10
-MONITOR_DELAY=1
-MONITOR_TIMEOUT=5
-WEBHOOK_SUCCESS=your_webhook_success
-WEBHOOK_MONITOR=your_webhook_monitor_optional
-WETHENEW_EMAIL=your_wethenew_email
-WETHENEW_PASSWORD=your_wethenew_password
+```csv
+mail,password,price_delta
+john.doe@gmail.com,my_password,10
+pierre.doe@gmail.com,my_password,20
 ```
 
-- `PRICE_DELTA` is the acceptable difference between the price of the offer and the price of the item in euros.
-  For example, if you list an item for 100€ and you set `PRICE_DELTA` to 10, it will accept offers over 90€.
-- `MODE` is the mode of the program, here is the list of the available modes:
+In this example, the toolbox will run 2 accounts and will accept offers up to 10€ below the listing price for the first
+account and 20€ below the listing price for the second account.
 
-| Mode | Snipe offers | Snipe consignments |
-|:----:|:------------:|:------------------:|
-|  0   |      ✔️      |         ✔️         |
-|  1   |      ✔️      |         ❌          |
-|  2   |      ❌       |         ✔️         |
+You also need to create a `.env` file in the root directory of the project and fill it with the following variables:
+
+```dotenv
+MONITOR_DELAY=1.5
+MONITOR_TIMEOUT=5
+WEBHOOK_SUCCESS=your_webhook_success
+WEBHOOK_MONITOR=your_webhook_monitor
+LOG_LEVEL=1
+```
+
+| Variable        | Type  | Optional | Description                                                   |
+|-----------------|-------|----------|---------------------------------------------------------------|
+| MONITOR_DELAY   | float | ❌        | The delay between each request to the API (in seconds)        |
+| MONITOR_TIMEOUT | float | ❌        | The timeout of each request to the API (in seconds)           |
+| WEBHOOK_SUCCESS | str   | ❌        | The webhook URL to send a message when an offer is accepted   |
+| WEBHOOK_MONITOR | str   | ✔️       | The webhook URL to send a message when a consign is available |
+| LOG_LEVEL       | int   | ❌        | The level of the logs (0: all, 1: info, 2: warning, 3: error) |
 
 ### Install Python and dependencies
 

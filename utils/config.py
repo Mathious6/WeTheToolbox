@@ -13,7 +13,6 @@ logger = Log('Config', LogLevel.DEBUG)
 
 class Config:
     def __init__(self):
-        self.mode: int = 0
         self.monitor_delay: float = 5
         self.monitor_timeout: float = 10
         self.webhook_success: str | None = None
@@ -56,7 +55,6 @@ class Config:
 
     def get_env(self):
         try:
-            self.mode: int = int(self.get_env_variable('MODE'))
             self.monitor_delay: float = float(self.get_env_variable('MONITOR_DELAY'))
             self.monitor_timeout: float = float(self.get_env_variable('MONITOR_TIMEOUT'))
             self.webhook_success: str = self.get_env_variable('WEBHOOK_SUCCESS')

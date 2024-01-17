@@ -1,5 +1,2 @@
 venv/
 .idea/
-.env
-proxies.txt
-accounts.csv
