@@ -54,6 +54,7 @@ class Consign:
 class Product:
     name: str
     size: str
+    brand: str = None
     image: str = None
     id: str = None
     price: int = None

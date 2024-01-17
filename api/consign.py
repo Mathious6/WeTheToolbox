@@ -111,6 +111,7 @@ class ConsignManager:
 
                         for p in seller.listing:
                             if p == product:
+                                product.brand = p.brand
                                 product.image = p.image
                                 product.price = p.price
                                 product.id = p.id

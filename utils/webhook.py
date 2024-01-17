@@ -103,7 +103,7 @@ class WebHook:
             {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
             {'name': 'Accepted', 'value': datetime.utcnow().isoformat()[:-3] + 'Z', 'inline': False},
         ]
-        webhook_data: dict = self._build_webhook_data(offer.image, f'Offer accepted [{offer.sku}] 🎉', 0xA0E062, fields)
+        webhook_data: dict = self._build_webhook_data(offer.image, 'Offer accepted 🎉', 0xA0E062, fields)
         self._send_webhook(webhook_data)
 
     def send_refuse_offer(self, offer: Offer) -> None:
@@ -114,7 +114,7 @@ class WebHook:
             {'name': 'Price Diff', 'value': f'{offer.price - offer.listing_price}€', 'inline': True},
             {'name': 'Refused', 'value': datetime.utcnow().isoformat()[:-3] + 'Z', 'inline': False},
         ]
-        webhook_data: dict = self._build_webhook_data(offer.image, f'Offer refused [{offer.sku}] ❌', 0xFF0000, fields)
+        webhook_data: dict = self._build_webhook_data(offer.image, 'Offer refused ❌', 0xFF0000, fields)
         self._send_webhook(webhook_data)
 
     def send_consign(self, consign: Consign, added_sizes: set[str]) -> None:
@@ -146,5 +146,5 @@ class WebHook:
             {'name': 'Size', 'value': product.size, 'inline': True},
             {'name': 'Consignment Price', 'value': f'{product.price}€', 'inline': True},
         ]
-        webhook_data: dict = self._build_webhook_data(None, 'Consignment placed 🎉', 0xA0E062, fields)
+        webhook_data: dict = self._build_webhook_data(product.image, 'Consignment placed 🎉', 0xA0E062, fields)
         self._send_webhook(webhook_data)
