@@ -3,3 +3,5 @@ venv/
 .env
 proxies.txt
 accounts.csv
+__pycache__/
+*.py[cod]
