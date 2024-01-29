@@ -6,10 +6,10 @@
 
 ## 📖 Table of Contents
 
-- [What is WeTheNew?](#what-is-wethenew)
-- [What is WeTheToolbox?](#what-is-wethetoolbox)
-- [How to install WeTheToolbox?](#how-to-install-wethetoolbox)
-- [How to contribute and contact us?](#how-to-contribute-and-contact-us)
+- [What is WeTheNew?](#-what-is-wethenew)
+- [What is WeTheToolbox?](#-what-is-wethetoolbox)
+- [How to install WeTheToolbox?](#-how-to-install-wethetoolbox)
+- [How to contribute and contact us?](#-how-to-contribute-and-contact-us)
 
 ***
 
