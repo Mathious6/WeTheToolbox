@@ -18,8 +18,8 @@ LISTING_URL: str = 'https://api-sell.wethenew.com/listings'
 PAYMENT_URL: str = 'https://api-sell.wethenew.com/payment-infos'
 SHIPPING_URL: str = 'https://api-sell.wethenew.com/addresses?type=shipping'
 C3_ANCHOR: str = (
-    'https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LeJBSAdAAAAACyoWxmCY7q5G-_6GnKBdpF4raee&co'
-    '=aHR0cHM6Ly9zZWxsLndldGhlbmV3LmNvbTo0NDM.&hl=en&v=u-xcq3POCWFlCr3x8_IPxgPu&size=invisible&cb=k30rgwzggens'
+    'https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LfbSlUpAAAAABNgkya850A9AtuIxEzJtv5V5cO5&co='
+    'aHR0cHM6Ly9zZWxsLndldGhlbmV3LmNvbTo0NDM.&hl=en&v=Ya-Cd6PbRI5ktAHEhm9JuKEu&size=invisible&cb=gpdfxohtm66a'
 )
 
 

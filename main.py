@@ -17,7 +17,10 @@ logger = Log('Home', LogLevel.DEBUG)
 
 
 async def main():
-    await noble_tls.update_if_necessary()
+    try:
+        await noble_tls.update_if_necessary()
+    except Exception as e:
+        logger.warning(f'Failed to update noble_tls: {e}')
     proxies: Proxies = Proxies()
     config: Config = Config()
     sellers: list[Seller] = []
