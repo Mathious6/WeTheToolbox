@@ -16,6 +16,7 @@ class Config:
         self.monitor_delay: float = 5
         self.monitor_timeout: float = 10
         self.webhook_success: str | None = None
+        self.webhook_refused: str | None = None
         self.webhook_monitor: str | None = None
         self.log_level: int = 0
 
@@ -58,6 +59,7 @@ class Config:
             self.monitor_delay: float = float(self.get_env_variable('MONITOR_DELAY'))
             self.monitor_timeout: float = float(self.get_env_variable('MONITOR_TIMEOUT'))
             self.webhook_success: str = self.get_env_variable('WEBHOOK_SUCCESS')
+            self.webhook_monitor: str = self.get_env_variable('WEBHOOK_REFUSED', optional=True)
             self.webhook_monitor: str = self.get_env_variable('WEBHOOK_MONITOR', optional=True)
             self.log_level: int = int(self.get_env_variable('LOG_LEVEL', optional=True) or 0)
 

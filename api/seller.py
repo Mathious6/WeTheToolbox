@@ -36,6 +36,7 @@ class Seller:
         self.proxies: Proxies = proxies
         self.delay: float = config.monitor_delay
         self.webhook_s = config.webhook_success
+        self.webhook_r = config.webhook_refused
         self.webhook_m = config.webhook_monitor
         self.log_level: int = config.log_level
 

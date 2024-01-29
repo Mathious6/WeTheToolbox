@@ -86,6 +86,7 @@ You also need to create a `.env` file in the root directory of the project and f
 MONITOR_DELAY=1.5
 MONITOR_TIMEOUT=5
 WEBHOOK_SUCCESS=your_webhook_success
+WEBHOOK_REFUSED=your_webhook_refused
 WEBHOOK_MONITOR=your_webhook_monitor
 LOG_LEVEL=1
 ```
@@ -95,6 +96,7 @@ LOG_LEVEL=1
 | MONITOR_DELAY   | float | ❌        | The delay between each request to the API (in seconds)        |
 | MONITOR_TIMEOUT | float | ❌        | The timeout of each request to the API (in seconds)           |
 | WEBHOOK_SUCCESS | str   | ❌        | The webhook URL to send a message when an offer is accepted   |
+| WEBHOOK_REFUSED | str   | ✔️       | The webhook URL to send a message when an offer is refused    |
 | WEBHOOK_MONITOR | str   | ✔️       | The webhook URL to send a message when a consign is available |
 | LOG_LEVEL       | int   | ✔️       | The level of the logs (0: all, 1: info, 2: warning, 3: error) |
 

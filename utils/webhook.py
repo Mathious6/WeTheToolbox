@@ -107,6 +107,10 @@ class WebHook:
         self._send_webhook(webhook_data)
 
     def send_refuse_offer(self, offer: Offer) -> None:
+        if not self.webhook_url:
+            logger.debug('Webhook URL is None, not sending webhook')
+            return
+
         fields: list[dict] = [
             {'name': 'Product', 'value': f'{offer.brand} - {offer.name}', 'inline': False},
             {'name': 'Size', 'value': offer.size, 'inline': True},

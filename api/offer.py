@@ -21,6 +21,7 @@ class OfferManager:
         self.proxies: Proxies = seller.proxies
         self.delay: float = seller.delay
         self.webhook_s: WebHook = WebHook(seller.webhook_s)
+        self.webhook_r: WebHook = WebHook(seller.webhook_r)
 
         self.seller = seller
 
@@ -96,7 +97,7 @@ class OfferManager:
             r: Response = await self.seller.s.post(URL_OFFERS, json=json, proxy=self.proxies.random)
             if r.status_code == 201:
                 self.log.success(f'Offer {offer.id} refused!')
-                self.webhook_s.send_refuse_offer(offer)
+                self.webhook_r.send_refuse_offer(offer)
             else:
                 self.log.error(f'Error while refusing offer {offer.id}: {r.status_code}')
         except Exception as e:
