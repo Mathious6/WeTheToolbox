@@ -96,7 +96,7 @@ LOG_LEVEL=1
 | MONITOR_TIMEOUT | float | ❌        | The timeout of each request to the API (in seconds)           |
 | WEBHOOK_SUCCESS | str   | ❌        | The webhook URL to send a message when an offer is accepted   |
 | WEBHOOK_MONITOR | str   | ✔️       | The webhook URL to send a message when a consign is available |
-| LOG_LEVEL       | int   | ❌        | The level of the logs (0: all, 1: info, 2: warning, 3: error) |
+| LOG_LEVEL       | int   | ✔️       | The level of the logs (0: all, 1: info, 2: warning, 3: error) |
 
 ### Install Python and dependencies
 
